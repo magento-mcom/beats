@@ -108,7 +108,7 @@ type bulkEventMeta struct {
 	DocType  string `json:"_type,omitempty" struct:"_type,omitempty"`
 	Pipeline string `json:"pipeline,omitempty" struct:"pipeline,omitempty"`
 	ID       string `json:"_id,omitempty" struct:"_id,omitempty"`
-	Routing  string `json:"_routing,omitempty" struct:"_routing,omitempty"`
+	Routing  string `json:"routing,omitempty" struct:"routing,omitempty"`
 }
 
 type bulkResultStats struct {
