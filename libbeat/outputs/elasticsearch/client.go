@@ -108,6 +108,7 @@ type bulkEventMeta struct {
 	DocType  string `json:"_type,omitempty" struct:"_type,omitempty"`
 	Pipeline string `json:"pipeline,omitempty" struct:"pipeline,omitempty"`
 	ID       string `json:"_id,omitempty" struct:"_id,omitempty"`
+	Routing  string `json:"_routing,omitempty" struct:"_routing,omitempty"`
 }
 
 type bulkResultStats struct {
@@ -426,13 +427,22 @@ func createEventBulkMeta(
 		return nil, err
 	}
 
-	var id string
+	var id, routing string
 	if m := event.Meta; m != nil {
 		if tmp := m["id"]; tmp != nil {
 			if s, ok := tmp.(string); ok {
 				id = s
 			} else {
 				logp.Err("Event ID '%v' is no string value", id)
+			}
+
+		}
+
+		if tmp := m["routing"]; tmp != nil {
+			if s, ok := tmp.(string); ok {
+				routing = s
+			} else {
+				logp.Err("Event Routing '%v' is no string value", routing)
 			}
 		}
 	}
@@ -442,6 +452,7 @@ func createEventBulkMeta(
 		DocType:  eventType,
 		Pipeline: pipeline,
 		ID:       id,
+		Routing:  routing,
 	}
 
 	if id != "" {
