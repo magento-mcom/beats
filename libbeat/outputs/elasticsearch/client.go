@@ -103,6 +103,10 @@ type bulkCreateAction struct {
 	Create bulkEventMeta `json:"create" struct:"create"`
 }
 
+type bulkUpdateAction struct {
+	Update bulkEventMeta `json:"update" struct:"update"`
+}
+
 type bulkEventMeta struct {
 	Index    string `json:"_index" struct:"_index"`
 	DocType  string `json:"_type,omitempty" struct:"_type,omitempty"`
@@ -427,7 +431,7 @@ func createEventBulkMeta(
 		return nil, err
 	}
 
-	var id, routing string
+	var id, routing, opType string
 	if m := event.Meta; m != nil {
 		if tmp := m["_id"]; tmp != nil {
 			if s, ok := tmp.(string); ok {
@@ -445,6 +449,14 @@ func createEventBulkMeta(
 				logp.Err("Event Routing '%v' is no string value", routing)
 			}
 		}
+
+		if tmp := m["op_type"]; tmp != nil {
+			if s, ok := tmp.(string); ok {
+				opType = s
+			} else {
+				logp.Err("Event op_type '%v' is no string value", routing)
+			}
+		}
 	}
 
 	meta := bulkEventMeta{
@@ -456,6 +468,10 @@ func createEventBulkMeta(
 	}
 
 	if id != "" {
+		if opType == "update" {
+			fmt.Println("---", "USING BULK_UPDATE", "---")
+			return bulkUpdateAction{meta}, nil
+		}
 		fmt.Println("---", "USING BULK_CREATE", "---")
 		return bulkCreateAction{meta}, nil
 	}
