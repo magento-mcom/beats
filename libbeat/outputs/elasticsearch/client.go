@@ -844,9 +844,11 @@ func (conn *Connection) execHTTPRequest(req *http.Request) (int, []byte, error) 
 		req.Host = host
 	}
 
-	body, _ := ioutil.ReadAll(req.Body)
-	fmt.Printf("\n\nREQUEST_TO_SEND\n%+#v\n\n", string(body))
-	req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+	if req.Body != nil {
+		body, _ := ioutil.ReadAll(req.Body)
+		fmt.Printf("\n\nREQUEST_TO_SEND\n%+#v\n\n", string(body))
+		req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+	}
 
 	resp, err := conn.http.Do(req)
 	if err != nil {
