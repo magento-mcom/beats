@@ -456,8 +456,11 @@ func createEventBulkMeta(
 	}
 
 	if id != "" {
+		fmt.Println("---", "USING BULK_CREATE", "---")
 		return bulkCreateAction{meta}, nil
 	}
+
+	fmt.Println("---", "USING BULK_INDEX", "---")
 	return bulkIndexAction{meta}, nil
 }
 
