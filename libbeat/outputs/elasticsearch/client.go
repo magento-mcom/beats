@@ -469,14 +469,15 @@ func createEventBulkMeta(
 
 	if id != "" {
 		if opType == "update" {
-			fmt.Println("---", "USING BULK_UPDATE", "---")
+			fmt.Printf("\n\n--- USING BULK_UPDATE ---\n%+#v\n\n", meta)
 			return bulkUpdateAction{meta}, nil
 		}
-		fmt.Println("---", "USING BULK_CREATE", "---")
+
+		fmt.Printf("\n\n--- USING BULK_CREATE ---\n%+#v\n\n", meta)
 		return bulkCreateAction{meta}, nil
 	}
 
-	fmt.Println("---", "USING BULK_INDEX", "---")
+	fmt.Printf("\n\n--- USING BULK_INDEX ---\n%+#v\n\n", meta)
 	return bulkIndexAction{meta}, nil
 }
 
