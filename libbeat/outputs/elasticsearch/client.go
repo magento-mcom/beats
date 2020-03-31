@@ -429,7 +429,7 @@ func createEventBulkMeta(
 
 	var id, routing string
 	if m := event.Meta; m != nil {
-		if tmp := m["id"]; tmp != nil {
+		if tmp := m["_id"]; tmp != nil {
 			if s, ok := tmp.(string); ok {
 				id = s
 			} else {
@@ -438,7 +438,7 @@ func createEventBulkMeta(
 
 		}
 
-		if tmp := m["routing"]; tmp != nil {
+		if tmp := m["_routing"]; tmp != nil {
 			if s, ok := tmp.(string); ok {
 				routing = s
 			} else {
