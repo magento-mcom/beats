@@ -844,6 +844,10 @@ func (conn *Connection) execHTTPRequest(req *http.Request) (int, []byte, error) 
 		req.Host = host
 	}
 
+	body, _ := ioutil.ReadAll(req.Body)
+	fmt.Printf("\n\nREQUEST_TO_SEND\n%+#v\n\n", string(body))
+	req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
 	resp, err := conn.http.Do(req)
 	if err != nil {
 		return 0, nil, err
@@ -855,6 +859,8 @@ func (conn *Connection) execHTTPRequest(req *http.Request) (int, []byte, error) 
 	if err != nil {
 		return status, nil, err
 	}
+
+	fmt.Printf("\n\nRESPONSE_RECEIVED (%d)\n%+#v\n\n", status, string(obj))
 
 	if status >= 300 {
 		// add the response body with the error returned by Elasticsearch
