@@ -403,7 +403,27 @@ func bulkEncodePublishRequest(
 			logp.Err("Failed to encode event meta data: %s", err)
 			continue
 		}
-		if err := body.Add(meta, event); err != nil {
+
+		var opType string
+		if m := event.Meta; m != nil {
+			if tmp := m["op_type"]; tmp != nil {
+				if s, ok := tmp.(string); ok {
+					opType = s
+				} else {
+					logp.Err("Event op_type '%v' is no string value", tmp)
+				}
+			}
+		}
+
+		// For update payloads, we use only the Fields provided and disregard the
+		// other settings as they would generate the wrong payload expected for
+		// bulk updates.
+		var e interface{} = event
+		if opType == "update" {
+			e = event.Fields
+		}
+
+		if err := body.Add(meta, e); err != nil {
 			logp.Err("Failed to encode event: %s", err)
 			logp.Debug("elasticsearch", "Failed event: %v", event)
 			continue
@@ -437,7 +457,7 @@ func createEventBulkMeta(
 			if s, ok := tmp.(string); ok {
 				id = s
 			} else {
-				logp.Err("Event ID '%v' is no string value", id)
+				logp.Err("Event ID '%v' is no string value", tmp)
 			}
 
 		}
@@ -446,7 +466,7 @@ func createEventBulkMeta(
 			if s, ok := tmp.(string); ok {
 				routing = s
 			} else {
-				logp.Err("Event Routing '%v' is no string value", routing)
+				logp.Err("Event Routing '%v' is no string value", tmp)
 			}
 		}
 
@@ -454,7 +474,7 @@ func createEventBulkMeta(
 			if s, ok := tmp.(string); ok {
 				opType = s
 			} else {
-				logp.Err("Event op_type '%v' is no string value", routing)
+				logp.Err("Event op_type '%v' is no string value", tmp)
 			}
 		}
 	}
@@ -469,15 +489,12 @@ func createEventBulkMeta(
 
 	if id != "" {
 		if opType == "update" {
-			fmt.Printf("\n\n--- USING BULK_UPDATE ---\n%+#v\n%+#v\n\n", meta, event)
 			return bulkUpdateAction{meta}, nil
 		}
 
-		fmt.Printf("\n\n--- USING BULK_CREATE ---\n%+#v\n%+#v\n\n", meta, event)
 		return bulkCreateAction{meta}, nil
 	}
 
-	fmt.Printf("\n\n--- USING BULK_INDEX ---\n%+#v\n%+#v\n\n", meta, event)
 	return bulkIndexAction{meta}, nil
 }
 
@@ -846,7 +863,6 @@ func (conn *Connection) execHTTPRequest(req *http.Request) (int, []byte, error) 
 
 	if req.Body != nil {
 		body, _ := ioutil.ReadAll(req.Body)
-		fmt.Printf("\n\nREQUEST_TO_SEND\n%+#v\n\n", string(body))
 		req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 	}
 
@@ -861,8 +877,6 @@ func (conn *Connection) execHTTPRequest(req *http.Request) (int, []byte, error) 
 	if err != nil {
 		return status, nil, err
 	}
-
-	fmt.Printf("\n\nRESPONSE_RECEIVED (%d)\n%+#v\n\n", status, string(obj))
 
 	if status >= 300 {
 		// add the response body with the error returned by Elasticsearch
