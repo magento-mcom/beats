@@ -861,11 +861,6 @@ func (conn *Connection) execHTTPRequest(req *http.Request) (int, []byte, error) 
 		req.Host = host
 	}
 
-	if req.Body != nil {
-		body, _ := ioutil.ReadAll(req.Body)
-		req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
-	}
-
 	resp, err := conn.http.Do(req)
 	if err != nil {
 		return 0, nil, err
